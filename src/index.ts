@@ -6,10 +6,13 @@ import { MatriculasRoutes } from "./routes/matriculas.routes";
 import { AuthRoutes } from "./routes/auth.routes";
 import { ProjetosRoutes } from "./routes/projetos.routes";
 import cors from "cors";
+import { setupSwagger } from "./swagger";
 
 const app = express();
 app.use(express.json());
 app.use(cors());
+
+setupSwagger(app);
 
 app.get("/", (_, res) => {
   res.status(200).json({
