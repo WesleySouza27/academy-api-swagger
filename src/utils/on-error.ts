@@ -3,6 +3,8 @@ import { HTTPError } from "./http.error";
 import { JsonWebTokenError } from "jsonwebtoken";
 
 export function onError(error: unknown, res: Response): void {
+  console.error("Erro capturado no middleware:", error); // Log detalhado do erro
+
   if (error instanceof HTTPError) {
     res.status(error.statusCode).json({
       sucesso: false,

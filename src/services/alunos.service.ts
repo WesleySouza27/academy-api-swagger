@@ -8,8 +8,7 @@ import {
 import { HTTPError } from "../utils/http.error";
 import { Bcrypt } from "../utils/bcrypt";
 
-// Tipos Utilitários TS
-type AlunoParcial = Omit<Aluno,"senha">;
+type AlunoParcial = Omit<Aluno, "senha">;
 
 export class AlunosService {
   public async cadastrar({
@@ -17,115 +16,40 @@ export class AlunosService {
     nome,
     senha,
     idade,
-    tipo
+    tipo,
   }: CadastrarAlunoDto): Promise<AlunoParcial> {
     const emailJaCadastrado = await prismaClient.aluno.findUnique({
-      where: { email: email },
+      where: { email },
     });
 
     if (emailJaCadastrado) {
       throw new HTTPError(409, "E-mail já cadastrado por outro aluno");
     }
 
-    const bcrypt = new Bcrypt()
+    const bcrypt = new Bcrypt();
     const senhaEncriptografada = await bcrypt.gerarHash(senha);
-
 
     const novoAluno = await prismaClient.aluno.create({
       data: {
         nome,
         email,
         senha: senhaEncriptografada,
-        idade
-      },
-      omit: {
-        senha: true,
+        idade,
       },
     });
 
-
-    const funcionalidades = await prismaClient.funcionalidade.findMany();
-
-    for(const funcionalidade of funcionalidades) {
-
-      /**
-       * Para a funcionalidade de projetos é necessário que o tipo do aluno siga as instruções:
-       * 
-       */
-      if (funcionalidade.nome === 'projetos') {
-          // Projetos
-          // Cadastrar - M e T
-          // Atualizar - T
-          // Excluir   - T
-          // Listar    - T, F ou M
-        await prismaClient.permissao.create({
-          data: {
-            alunoId: novoAluno.id,
-            funcionalidadeId: funcionalidade.id,
-            atualizar: tipo === 'T',
-            criar: tipo === 'T' || tipo === 'M' ,
-            deletar: tipo === 'T',
-            ler: true
-          }
-        })
-
-        continue
-      }
-
-      if (funcionalidade.nome === 'turmas') {
-        // Turmas
-        // Cadastrar, atualizar, excluir - T
-        // Listar - todos
-        await prismaClient.permissao.create({
-          data: {
-            alunoId: novoAluno.id,
-            funcionalidadeId: funcionalidade.id,
-            atualizar: tipo === 'T',
-            criar: tipo === 'T',
-            deletar: tipo === 'T',
-            ler: true
-          }
-        })
-
-        continue
-      }
-
-      if (funcionalidade.nome === 'matriculas') {
-        // Matricula
-        // Cadastrar - F ou M
-        // Atualizar - T
-        // Deletar   - T
-        // Listagem  - todos
-        await prismaClient.permissao.create({
-          data: {
-            alunoId: novoAluno.id,
-            funcionalidadeId: funcionalidade.id,
-            atualizar: tipo === 'T',
-            criar: tipo === 'F' || tipo === 'M',
-            deletar: tipo === 'T',
-            ler: true
-          }
-        })
-
-        continue
-      }
-
-      await prismaClient.permissao.create({
-        data: {
-          alunoId: novoAluno.id,
-          funcionalidadeId: funcionalidade.id,
-          atualizar: false,
-          criar: false,
-          deletar: false,
-          ler: false
-        }
-      })
-    }
-
-    return novoAluno;
+    return {
+      id: novoAluno.id,
+      nome: novoAluno.nome,
+      email: novoAluno.email,
+      idade: novoAluno.idade,
+      criadoEm: novoAluno.criadoEm,
+      atualizado_em: novoAluno.atualizado_em,
+    };
   }
 
   public async listar({ nome }: ListarAlunosDto): Promise<AlunoParcial[]> {
+    console.log("Chamando método listar no AlunosService");
     const alunosDB = await prismaClient.aluno.findMany({
       where: {
         nome: {
@@ -136,31 +60,36 @@ export class AlunosService {
       orderBy: {
         nome: "asc",
       },
-      omit: { senha: true },
-      include: {
-        endereco: true,
-      },
     });
+    console.log("Resultado do findMany:", alunosDB); // Log para depuração
 
-    return alunosDB;
+    return alunosDB.map((aluno) => ({
+      id: aluno.id,
+      nome: aluno.nome,
+      email: aluno.email,
+      idade: aluno.idade,
+      criadoEm: aluno.criadoEm,
+      atualizado_em: aluno.atualizado_em,
+    }));
   }
 
   public async buscarPorId(idAluno: string): Promise<AlunoParcial> {
     const aluno = await prismaClient.aluno.findUnique({
       where: { id: idAluno },
-      omit: {
-        senha: true,
-      },
-      include: {
-        endereco: true,
-      },
     });
 
     if (!aluno) {
       throw new HTTPError(404, "Aluno não encontrado");
     }
 
-    return aluno;
+    return {
+      id: aluno.id,
+      nome: aluno.nome,
+      email: aluno.email,
+      idade: aluno.idade,
+      criadoEm: aluno.criadoEm,
+      atualizado_em: aluno.atualizado_em,
+    };
   }
 
   public async atualizar({
@@ -180,12 +109,16 @@ export class AlunosService {
         nome,
         senha,
       },
-      omit: {
-        senha: true,
-      },
     });
 
-    return alunoAtualizado;
+    return {
+      id: alunoAtualizado.id,
+      nome: alunoAtualizado.nome,
+      email: alunoAtualizado.email,
+      idade: alunoAtualizado.idade,
+      criadoEm: alunoAtualizado.criadoEm,
+      atualizado_em: alunoAtualizado.atualizado_em,
+    };
   }
 
   public async excluir(idAluno: string): Promise<AlunoParcial> {
@@ -193,11 +126,15 @@ export class AlunosService {
 
     const alunoExcluido = await prismaClient.aluno.delete({
       where: { id: idAluno },
-      omit: {
-        senha: true,
-      },
     });
 
-    return alunoExcluido;
+    return {
+      id: alunoExcluido.id,
+      nome: alunoExcluido.nome,
+      email: alunoExcluido.email,
+      idade: alunoExcluido.idade,
+      criadoEm: alunoExcluido.criadoEm,
+      atualizado_em: alunoExcluido.atualizado_em,
+    };
   }
 }

@@ -5,12 +5,24 @@ import { onError } from "../utils/on-error";
 export class AlunosController {
   public async listar(req: Request, res: Response): Promise<void> {
     try {
+      console.log("Chamando método listar no AlunosController"); // Log para depuração
+
       const { nome } = req.query;
 
       const service = new AlunosService();
       const resultado = await service.listar({
         nome: nome as string | undefined,
       });
+
+      console.log("Resultado do serviço listar:", resultado); // Log para depuração
+
+      if (!resultado.length) {
+        res.status(404).json({
+          sucesso: false,
+          mensagem: "Nenhum aluno encontrado",
+        });
+        return;
+      }
 
       res.status(200).json({
         sucesso: true,
@@ -86,7 +98,7 @@ export class AlunosController {
 
       res.status(200).json({
         sucesso: true,
-        mensagem: "Aluno excluido",
+        mensagem: "Aluno excluído",
         dados: resultado,
       });
     } catch (error) {

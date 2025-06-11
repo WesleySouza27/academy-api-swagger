@@ -6,7 +6,14 @@
     "forceConsistentCasingInFileNames": true,            
     "strict": true,                                      
     "skipLibCheck": true,
-    "rootDir": "./src",
-    "outDir": "./dist"                                
-  }
+    "rootDirs": ["./src", "./tests"],
+    "outDir": "./dist",
+    "baseUrl": "./",
+    "paths": {
+      "@database/*": ["src/database/*"],
+      "@server/*": ["src/*"]
+    }                                
+  },
+  "include": ["./src/**/*.ts", "./tests/**/*.ts"],
+  "exclude": ["node_modules"]
 }
