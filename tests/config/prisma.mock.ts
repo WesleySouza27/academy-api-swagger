@@ -9,7 +9,6 @@ jest.mock("../../src/database/prisma.client", () => ({
 
 beforeEach(() => {
   mockReset(prismaMock);
-  console.log("Mock do Prisma resetado"); // Log para depuração
 });
 
 export const prismaMock = prisma as unknown as DeepMockProxy<PrismaClient>;

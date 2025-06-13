@@ -7,6 +7,8 @@ import { AuthRoutes } from "./routes/auth.routes";
 import { ProjetosRoutes } from "./routes/projetos.routes";
 import cors from "cors";
 import { setupSwagger } from "./swagger";
+import dotenv from "dotenv";
+dotenv.config();
 
 const app = express();
 app.use(express.json());
